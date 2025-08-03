@@ -3,32 +3,49 @@ import pandas as pd
 import plotly.express as px
 car_data = pd.read_csv('vehicles_us.csv')
  
-# Título principal
+# Título
 st.title("🚗 Análisis Interactivo de Vehículos Usados")
+st.markdown("Filtra los datos por año y condición antes de generar visualizaciones interactivas.")
 
-st.markdown("Explora visualmente el conjunto de datos con histogramas y gráficos de dispersión usando botones interactivos.")
+# ---------------------- FILTROS ----------------------
+# Eliminar filas con model_year o condition vacíos
+filtered_data = car_data.dropna(subset=["model_year", "condition"])
 
-# Botón para construir histograma
+# Filtro por rango de año
+min_year = int(filtered_data["model_year"].min())
+max_year = int(filtered_data["model_year"].max())
+year_range = st.slider("📅 Selecciona el rango de años", min_year, max_year, (min_year, max_year))
+
+# Filtro por condición (checkbox múltiple)
+available_conditions = sorted(filtered_data["condition"].dropna().unique())
+selected_conditions = st.multiselect("🚘 Elige condiciones del vehículo", available_conditions, default=available_conditions)
+
+# Aplicar filtros
+filtered_data = filtered_data[
+    (filtered_data["model_year"] >= year_range[0]) &
+    (filtered_data["model_year"] <= year_range[1]) &
+    (filtered_data["condition"].isin(selected_conditions))
+]
+
+# ---------------------- BOTÓN HISTOGRAMA ----------------------
 if st.button("📊 Construir histograma de kilometraje"):
-    st.write("✅ Creando histograma de la columna `odometer` (kilometraje)...")
-
+    st.write("✅ Histograma de `odometer` para vehículos filtrados")
     fig_hist = px.histogram(
-        car_data.dropna(subset=["odometer"]),
+        filtered_data.dropna(subset=["odometer"]),
         x="odometer",
         nbins=50,
-        title="Distribución del Kilometraje de Vehículos Usados",
+        title="Distribución del Kilometraje",
         labels={"odometer": "Kilometraje (millas)"},
         color_discrete_sequence=["#636EFA"],
         opacity=0.8
     )
     st.plotly_chart(fig_hist, use_container_width=True)
 
-# Botón para construir gráfico de dispersión
+# ---------------------- BOTÓN DISPERSIÓN ----------------------
 if st.button("📈 Construir gráfico de dispersión (odometer vs price)"):
-    st.write("✅ Creando gráfico de dispersión para `odometer` y `price`...")
-
+    st.write("✅ Gráfico de dispersión `odometer` vs `price` para vehículos filtrados")
     fig_scatter = px.scatter(
-        car_data.dropna(subset=["odometer", "price"]),
+        filtered_data.dropna(subset=["odometer", "price"]),
         x="odometer",
         y="price",
         color="condition",
