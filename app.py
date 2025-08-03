@@ -3,38 +3,39 @@ import pandas as pd
 import plotly.express as px
 car_data = pd.read_csv('vehicles_us.csv')
  
- # Título de la sección
-st.header("📊 Exploración del Kilometraje de Vehículos Usados")
+# Título principal
+st.title("🚗 Análisis Interactivo de Vehículos Usados")
 
-# Casilla para habilitar el histograma
-build_histogram = st.checkbox("Mostrar opciones para construir un histograma")
+st.markdown("Explora visualmente el conjunto de datos con histogramas y gráficos de dispersión usando botones interactivos.")
 
-if build_histogram:
-    st.markdown("Selecciona la opción para construir un histograma interactivo del kilometraje (`odometer`).")
+# Botón para construir histograma
+if st.button("📊 Construir histograma de kilometraje"):
+    st.write("✅ Creando histograma de la columna `odometer` (kilometraje)...")
 
-    # Botón para construir el histograma
-    if st.button("🔨 Construir histograma"):
-        st.success("✅ Histograma creado para la columna `odometer` del conjunto de datos.")
+    fig_hist = px.histogram(
+        car_data.dropna(subset=["odometer"]),
+        x="odometer",
+        nbins=50,
+        title="Distribución del Kilometraje de Vehículos Usados",
+        labels={"odometer": "Kilometraje (millas)"},
+        color_discrete_sequence=["#636EFA"],
+        opacity=0.8
+    )
+    st.plotly_chart(fig_hist, use_container_width=True)
 
-        # Crear histograma con mejor estilo
-        fig = px.histogram(
-            car_data.dropna(subset=["odometer"]),
-            x="odometer",
-            nbins=50,
-            title="Distribución del Kilometraje de Vehículos Usados",
-            labels={"odometer": "Kilometraje (millas)"},
-            color_discrete_sequence=["#636EFA"],
-            opacity=0.8
-        )
+# Botón para construir gráfico de dispersión
+if st.button("📈 Construir gráfico de dispersión (odometer vs price)"):
+    st.write("✅ Creando gráfico de dispersión para `odometer` y `price`...")
 
-        # Estilo del layout
-        fig.update_layout(
-            title_font_size=20,
-            xaxis_title_font_size=16,
-            yaxis_title_font_size=16,
-            plot_bgcolor="#f9f9f9",
-            paper_bgcolor="#ffffff"
-        )
-
-        # Mostrar el gráfico
-        st.plotly_chart(fig, use_container_width=True)
+    fig_scatter = px.scatter(
+        car_data.dropna(subset=["odometer", "price"]),
+        x="odometer",
+        y="price",
+        color="condition",
+        title="Relación entre Kilometraje y Precio",
+        labels={"odometer": "Kilometraje (millas)", "price": "Precio (USD)", "condition": "Condición"},
+        opacity=0.6,
+        color_discrete_sequence=px.colors.qualitative.Set1,
+        hover_data=["model", "model_year", "type"]
+    )
+    st.plotly_chart(fig_scatter, use_container_width=True)
